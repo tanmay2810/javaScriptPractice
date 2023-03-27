@@ -61,10 +61,12 @@ const inputLoanAmount = document.querySelector(".form__input--loan-amount");
 const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
-const displayMovements = (movemnets) => {
+const displayMovements = (movemnets, sort = false) => {
   containerMovements.innerHTML = "";
 
-  movemnets.forEach((movement, index) => {
+  const movs = sort ? movemnets.slice().sort( (a,b) => a - b) : movemnets
+
+  movs.forEach((movement, index) => {
     const type = movement > 0 ? "deposit" : "withdrawal";
     console.log(movement);
     const html = `
@@ -121,12 +123,8 @@ const withdawals = (accounts) => {
   });
 };
 
-const globalBalance = (accounts) => {
-  accounts.forEach((account) => {
-    account.balance = account.movements.reduce((acc, cur) => {
-      return acc + cur;
-    }, 0);
-  });
+const globalBalance = (account) => {
+  account.balance = account.movements.reduce((acc, cur) => acc + cur, 0);
 };
 
 const eurToUsd = 1.1;
@@ -139,52 +137,152 @@ const totalDepositsUSD = (accounts) => {
   });
 };
 
-const calculateBalance = (accounts) => {
-  accounts.forEach((account) => {
-    account.balance = account.movements
-      .filter((mov) => mov > 0)
-      .reduce((acc, mov) => acc + mov, 0);
-  });
+const calculateBalance = (account) => {
+  account.balance = account.movements
+    .filter((mov) => mov > 0)
+    .reduce((acc, mov) => acc + mov, 0);
 };
 
-const calculateTotalDebited = (accounts) => {
-  accounts.forEach((account) => {
-    account.debited = account.movements
-      .filter((mov) => mov < 0)
-      .reduce((acc, mov) => acc + mov, 0);
-  });
+const calculateTotalDebited = (account) => {
+  account.debited = account.movements
+    .filter((mov) => mov < 0)
+    .reduce((acc, mov) => acc + mov, 0);
 };
 
-const calculateTotalInterest = (accounts) => {
-  accounts.forEach((account) => {
-    account.totalInterest = account.movements
-      .filter((mov) => mov > 0)
-      .map((deposit) => (deposit * account.interestRate) / 100)
-      .filter((interest) => interest > 1)
-      .reduce((acc, mov) => acc + mov, 0);
-  });
+const calculateTotalInterest = (account) => {
+  account.totalInterest = account.movements
+    .filter((mov) => mov > 0)
+    .map((deposit) => (deposit * account.interestRate) / 100)
+    .filter((interest) => interest > 1)
+    .reduce((acc, mov) => acc + mov, 0);
 };
 
-const getAccount = (accounts, userName) =>{
-  return accounts.find( acc => acc.owner === userName)
-}
+const getAccount = (accounts, userName) => {
+  return accounts.find((acc) => acc.owner === userName);
+};
 
-displayMovements(account1.movements);
 createUserNames(accounts);
-globalBalance(accounts);
-displayGlobalBalance(account1.balance);
 totalDepositsUSD(accounts);
-// diplayTotalDeposit(account1.euroToUsd)
-calculateBalance(accounts);
-displayBalance(account1.balance);
-calculateTotalDebited(accounts);
-displayDebited(account1.debited);
-calculateTotalInterest(accounts);
-displayInterest(account1.totalInterest);
 
-console.log(getAccount(accounts,account1.owner))
+let currentAccount;
 
-console.log(accounts);
+btnLogin.addEventListener("click", (event) => {
+  event.preventDefault();
+  currentAccount = accounts.find(
+    (account) => account.userName === inputLoginUsername.value
+  );
+  console.log(currentAccount);
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    labelWelcome.textContent = `Welcome Back ${
+      currentAccount.owner.split(" ")[0]
+    }`;
+    containerApp.style.opacity = 100;
+
+    inputLoginUsername.value = inputLoginPin.value = "";
+
+    displayMovements(currentAccount.movements, sort);
+    globalBalance(currentAccount);
+    displayGlobalBalance(currentAccount.balance);
+    calculateBalance(currentAccount);
+    displayBalance(currentAccount.balance);
+    calculateTotalDebited(currentAccount);
+    displayDebited(currentAccount.debited);
+    calculateTotalInterest(currentAccount);
+    displayInterest(currentAccount.totalInterest);
+    console.log(accounts);
+  } else {
+    labelWelcome.textContent = `Wrong username or pin`;
+  }
+});
+
+btnTransfer.addEventListener("click", (event) => {
+  event.preventDefault();
+  const ammount = Number(inputTransferAmount.value);
+  const reciverAccount = accounts.find(
+    (account) => inputTransferTo.value === account.userName
+  );
+  console.log(ammount, reciverAccount, currentAccount);
+
+  if (
+    ammount > 0 &&
+    currentAccount.balance > 0 &&
+    reciverAccount &&
+    reciverAccount.userName !== currentAccount.userName
+  ) {
+    currentAccount.movements.push(0 - ammount);
+    currentAccount.balance -= ammount;
+    reciverAccount.movements.push(ammount);
+
+    updateUI();
+  }
+});
+
+btnClose.addEventListener("click", (event) => {
+  event.preventDefault();
+
+  if (
+    currentAccount.userName === inputCloseUsername.value &&
+    currentAccount.pin === Number(inputClosePin.value)
+  ) {
+    let index = accounts.findIndex(
+      (account) => account.userName === inputCloseUsername.value
+    );
+    accounts.splice(index, 1);
+    inputCloseUsername.value, (inputClosePin.value = "");
+    containerApp.style.opacity = 0;
+  }
+});
+
+btnLoan.addEventListener("click", (event) => {
+  event.preventDefault();
+
+  const amount = Number(inputLoanAmount.value);
+
+  if (
+    amount > 0 &&
+    currentAccount.movements.some((mov) => mov >= amount * 0.1)
+  ) {
+    console.log(amount);
+    currentAccount.movements.push(amount);
+    updateUI(currentAccount);
+  }
+  inputLoanAmount.value = "";
+});
+
+let sort = false;
+btnSort.addEventListener("click", (event) => {
+  event.preventDefault();
+  displayMovements(currentAccount.movements, !sort);
+  sort = !sort
+  console.log(sort)
+});
+
+const updateUI = (account) => {
+  displayMovements(account.movements, sort);
+  globalBalance(account);
+  displayGlobalBalance(account.balance);
+  calculateTotalDebited(account);
+  displayDebited(account.debited);
+};
+
+
+ // // accending
+  // currentAccount.movements.sort((a, b) => {
+  //   if (a > b) return 1; // keep order
+  //   if (b > a) return -1; // switch order
+  // });
+
+  // // decending
+  // currentAccount.movements.sort((a, b) => {
+  //   if (a > b) return -1;
+  //   if (b > a) return 1;
+  // });
+
+  // currentAccount.movements.sort((a, b) => a - b);
+
+  // currentAccount.movements.sort((a, b) => b - a);
+
+  // console.log(currentAccount.movements);
 
 // console.log(userNames(account1.owner.toLowerCase().split(' ')))
 
