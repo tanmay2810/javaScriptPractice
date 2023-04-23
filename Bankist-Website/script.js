@@ -7,7 +7,7 @@ const modal = document.querySelector(".modal");
 const overlay = document.querySelector(".overlay");
 const btnCloseModal = document.querySelector(".btn--close-modal");
 const btnsOpenModal = document.querySelectorAll(".btn--show-modal");
-const h1 = document.querySelector('h1')
+const h1 = document.querySelector("h1");
 
 const openModal = function (event) {
   event.preventDefault();
@@ -86,26 +86,48 @@ document.querySelector(".nav__links").addEventListener("click", (event) => {
   }
 });
 
+const tabs = document.querySelectorAll(".operations__tab");
+const tabsContainer = document.querySelector(".operations__tab-container");
+const tabsContent = document.querySelectorAll(".operations__content");
+
+tabsContainer.addEventListener("click", function (event) {
+  const clicked = event.target.closest(".operations__tab");
+  console.log(clicked);
+
+  if (!clicked) return;
+
+  // Remove Active classes
+  tabs.forEach((tab) => tab.classList.remove("operations__tab--active"));
+  tabsContent.forEach((tabContent) =>
+    tabContent.classList.remove("operations__content--active")
+  );
+
+  // Activate tabs
+  clicked.classList.add("operations__tab--active");
+  document
+    .querySelector(`.operations__content--${clicked.dataset.tab}`)
+    .classList.add("operations__content--active");
+});
 
 // Dom traversing
 
-console.log(h1.querySelectorAll('.highlight'))
-console.log(h1.childNodes)
-console.log(h1.children)
-h1.firstElementChild.style.color = 'white'
-h1.lastElementChild.style.color = 'white'
--
-// parent
-console.log(h1.parentNode)
-console.log(h1.closest('.header'))
-h1.closest('.header').style.background = 'var(--color-secondary-darker)'
-h1.closest('h1').style.background = 'var(--gradient-primary)'
+// console.log(h1.querySelectorAll('.highlight'))
+// console.log(h1.childNodes)
+// console.log(h1.children)
+// h1.firstElementChild.style.color = 'white'
+// h1.lastElementChild.style.color = 'white'
+// -
+// // parent
+// console.log(h1.parentNode)
+// console.log(h1.closest('.header'))
+// h1.closest('.header').style.background = 'var(--color-secondary-darker)'
+// h1.closest('h1').style.background = 'var(--gradient-primary)'
 
-// sibling
+// // sibling
 
-console.log(h1.previousElementSibling)
-console.log(h1.nextElementSibling)
-console.log(h1.nextSibling)
+// console.log(h1.previousElementSibling)
+// console.log(h1.nextElementSibling)
+// console.log(h1.nextSibling)
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 // console.log(document.documentElement)
