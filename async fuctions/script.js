@@ -334,3 +334,9 @@ const wherAmI = async function(country){
 }
 
 wherAmI('bharat').then( data => renderCountry(data) )
+
+fetch(`https://geocode.xyz/${coords[0]},${coords[1]}?geoit=json`).then( (response) =>{
+  console.log(response)
+  if(!response.ok) throw new Error('API not working')
+  response.json()
+}).then((data) => console.log(data.city)).catch(error => { console.error(error) }).finally( () => console.log('finally'))
