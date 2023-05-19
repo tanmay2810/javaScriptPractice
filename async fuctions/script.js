@@ -340,3 +340,12 @@ fetch(`https://geocode.xyz/${coords[0]},${coords[1]}?geoit=json`).then( (respons
   if(!response.ok) throw new Error('API not working')
   response.json()
 }).then((data) => console.log(data.city)).catch(error => { console.error(error) }).finally( () => console.log('finally'))
+
+
+// ------------------------------------------------------------------------------------------------------
+console.log('Bored API fetch request')
+fetch(`https://www.boredapi.com/api/activity`).then( (response) => {
+  console.log(response)
+  if(!response.ok) throw new Error('Api is not working')
+  response.json()
+}).then(data => console.log(data)).catch( error => console.error(error) ).finally( () => console.log('Bored api executed') )
